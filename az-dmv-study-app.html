@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ DMV Study App</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --card: #1a2236;
+    --border: #1e2d47;
+    --accent: #f5a623;
+    --accent2: #e84545;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --highlight: #2a3a5e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Road texture background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(50% - 2px),
+        rgba(245,166,35,0.04) calc(50% - 2px),
+        rgba(245,166,35,0.04) calc(50% + 2px),
+        transparent calc(50% + 2px),
+        transparent 100%
+      ),
+      radial-gradient(ellipse at 20% 0%, rgba(245,166,35,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(232,69,69,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 36px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+
+  .logo-badge {
+    width: 52px;
+    height: 52px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    color: #0a0e1a;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(245,166,35,0.3);
+  }
+
+  .header-text h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .header-text p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  .score-strip {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .score-num {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 32px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* TOPIC SELECTOR */
+  .section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .topic-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.2s;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  .topic-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--highlight);
+  }
+
+  .topic-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0e1a;
+    font-weight: 600;
+  }
+
+  .topic-btn .topic-icon {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  /* MODE SELECTOR */
+  .mode-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    transition: all 0.2s;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  .mode-btn.active {
+    background: rgba(245,166,35,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* START BUTTON */
+  .start-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0a0e1a;
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 20px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(245,166,35,0.2);
+    margin-bottom: 36px;
+  }
+
+  .start-btn:hover:not(:disabled) {
+    background: #ffba45;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(245,166,35,0.35);
+  }
+
+  .start-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 20px;
+    animation: slideIn 0.35s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .q-tag {
+    background: rgba(245,166,35,0.12);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .q-num {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .q-diff {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .q-diff.easy { color: var(--green); }
+  .q-diff.medium { color: var(--accent); }
+  .q-diff.hard { color: var(--red); }
+
+  .question-text {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  /* OPTIONS */
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 14px 18px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    text-align: left;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    color: var(--muted);
+    transition: all 0.18s;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--highlight);
+  }
+
+  .option-btn:hover:not(:disabled) .option-letter {
+    background: var(--accent);
+    color: #0a0e1a;
+  }
+
+  .option-btn.correct {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.08);
+  }
+
+  .option-btn.correct .option-letter {
+    background: var(--green);
+    color: white;
+  }
+
+  .option-btn.wrong {
+    border-color: var(--red);
+    background: rgba(239,68,68,0.08);
+  }
+
+  .option-btn.wrong .option-letter {
+    background: var(--red);
+    color: white;
+  }
+
+  .option-btn:disabled {
+    cursor: default;
+  }
+
+  /* EXPLANATION */
+  .explanation {
+    margin-top: 18px;
+    padding: 16px 18px;
+    background: rgba(245,166,35,0.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    color: #b8c5df;
+    line-height: 1.6;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .explanation strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* NEXT BTN */
+  .next-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 9px;
+    padding: 14px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 14px;
+  }
+
+  .next-btn:hover {
+    background: var(--accent);
+    color: #0a0e1a;
+  }
+
+  /* LOADING */
+  .loading-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 48px 28px;
+    text-align: center;
+    margin-bottom: 20px;
+    animation: slideIn 0.3s ease;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 18px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loading-text {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .loading-sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+    opacity: 0.6;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #ffba45);
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  /* RESULTS */
+  .results-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 40px;
+    text-align: center;
+    animation: slideIn 0.4s ease;
+  }
+
+  .results-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 48px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .results-title.pass { color: var(--green); }
+  .results-title.fail { color: var(--red); }
+  .results-title.good { color: var(--accent); }
+
+  .results-score {
+    font-size: 64px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .results-sub {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 30px;
+  }
+
+  .results-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .stat-val {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 28px;
+    color: var(--accent);
+  }
+
+  .stat-key {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .restart-btn {
+    background: var(--accent);
+    color: #0a0e1a;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 32px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 20px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover {
+    background: #ffba45;
+    transform: translateY(-1px);
+  }
+
+  /* TRUE/FALSE specific */
+  .tf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .tf-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 20px;
+    cursor: pointer;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-align: center;
+    transition: all 0.18s;
+  }
+
+  .tf-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .tf-btn.correct {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(34,197,94,0.08);
+  }
+
+  .tf-btn.wrong {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(239,68,68,0.08);
+  }
+
+  .tf-btn:disabled { cursor: default; }
+
+  /* FILL IN */
+  .fill-wrap {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .fill-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 14px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .fill-input:focus {
+    border-color: var(--accent);
+  }
+
+  .fill-input.correct { border-color: var(--green); }
+  .fill-input.wrong { border-color: var(--red); }
+
+  .fill-submit {
+    background: var(--accent);
+    color: #0a0e1a;
+    border: none;
+    border-radius: 9px;
+    padding: 14px 20px;
+    font-family: 'Bebas Neue', cursive;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .fill-submit:hover:not(:disabled) {
+    background: #ffba45;
+  }
+
+  .fill-submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Error */
+  .error-card {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    color: #fca5a5;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .hint-bar {
+    background: rgba(245,166,35,0.08);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .topic-grid { grid-template-columns: repeat(2, 1fr); }
+    .mode-row { flex-direction: column; }
+    .results-stats { grid-template-columns: repeat(3, 1fr); }
+    .results-score { font-size: 48px; }
+    header { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-badge">AZ</div>
+    <div class="header-text">
+      <h1>DMV Study App</h1>
+      <p>Arizona Driver License Manual · 2026 Edition</p>
+    </div>
+    <div class="score-strip" id="scoreStrip" style="display:none">
+      <div class="score-num" id="scoreDisplay">0/0</div>
+      <div class="score-label">Score</div>
+    </div>
+  </header>
+
+  <!-- SETUP SCREEN -->
+  <div id="setupScreen">
+
+    <div class="section-label">Choose a Topic</div>
+    <div class="topic-grid" id="topicGrid">
+      <button class="topic-btn active" data-topic="all">
+        <span class="topic-icon">📚</span>All Topics
+      </button>
+      <button class="topic-btn" data-topic="signs">
+        <span class="topic-icon">🚦</span>Traffic Signs
+      </button>
+      <button class="topic-btn" data-topic="rules">
+        <span class="topic-icon">📋</span>Rules of the Road
+      </button>
+      <button class="topic-btn" data-topic="safety">
+        <span class="topic-icon">🛡️</span>Safe Driving
+      </button>
+      <button class="topic-btn" data-topic="license">
+        <span class="topic-icon">🪪</span>License & ID
+      </button>
+      <button class="topic-btn" data-topic="emergency">
+        <span class="topic-icon">🚨</span>Emergencies
+      </button>
+      <button class="topic-btn" data-topic="sharing">
+        <span class="topic-icon">🚲</span>Sharing the Road
+      </button>
+      <button class="topic-btn" data-topic="parking">
+        <span class="topic-icon">🅿️</span>Parking & Freeway
+      </button>
+    </div>
+
+    <div class="section-label">Question Mode</div>
+    <div class="mode-row" id="modeRow">
+      <button class="mode-btn active" data-mode="multiple">🔘 Multiple Choice</button>
+      <button class="mode-btn" data-mode="truefalse">✓ True / False</button>
+      <button class="mode-btn" data-mode="mixed">⚡ Mixed Challenge</button>
+    </div>
+
+    <div class="section-label">Number of Questions</div>
+    <div class="mode-row" id="countRow" style="margin-bottom:28px">
+      <button class="mode-btn active" data-count="10">10 Questions</button>
+      <button class="mode-btn" data-count="20">20 Questions</button>
+      <button class="mode-btn" data-count="30">Full Test (30)</button>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startSession()">
+      START STUDY SESSION →
+    </button>
+
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="quizScreen" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div id="questionArea"></div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="resultsScreen" style="display:none">
+    <div class="results-card" id="resultsCard"></div>
+  </div>
+
+</div>
+
+<script>
+// ─────────── MANUAL CONTENT ───────────
+const MANUAL_CONTENT = `
+ARIZONA DRIVER LICENSE MANUAL - KEY CONTENT FOR QUIZ GENERATION
+
+SECTION 1 - BEFORE YOU DRIVE:
+- Required vehicle equipment: Brakes, Speedometer, Turn signals, intact Windshield, Horn, good Tires, Seat belts, Driver and front passenger windows, Emergency flashers
+- Tire pressure found on door jamb. Penny test: if Lincoln's head fully visible, replace tires
+- Arizona Safety Belt Law: Each front seat occupant must have lap and shoulder belt fastened. Operator must require all passengers UNDER 16 to buckle up
+- Child Car Seat: Children UNDER 5 must be in child restraint system. Children 5-8 must be in restraint until 4 feet 9 inches tall
+- Air bags unsafe for children under 12. Children 12 and under should NEVER ride in front seat
+- 511 service: dial 511 for traffic conditions, road closures, transit, airports, construction info (free service)
+- If vehicle stalls on railroad tracks: get out immediately
+- Loads must not drop, sift, leak, or escape from vehicle (A.R.S. 28-1098.A.)
+- Every vehicle needs brakes: cars/trucks need foot brake AND parking brake, each set applies to at least 2 wheels
+- Rearview mirror must show highway for at least 200 feet to the rear
+- Horn must be heard for 200 feet
+- Must have muffler to prevent excessive pollution or unusual noise
+- Windows: sun screening tint legal only within certain limits
+- Red flashing warning lights prohibited on front of vehicle (except emergency vehicles, school buses, snow removal)
+- Hazard warning lights (emergency flashers) should be activated whenever vehicle stopped on roadway or shoulder
+
+SECTION 2 - SAFE DRIVING PRACTICES:
+- Defensive Driving: constantly aware of conditions, plan ahead, anticipate dangers
+- Cushion of space: use 3-6 second rule. When vehicle ahead passes a point, count to 4 seconds minimum
+- At faster speeds, increase following distance
+- Most rear-end crashes caused by following too closely
+- When sharing lane with bicycle: allow at least 3 feet of clearance
+- Blind spots: areas on left and right not visible in mirror. Never drive in someone else's blind spot
+- Arizona law PROHIBITS holding or supporting wireless device while driving
+- Drivers may NOT write or read text-based communication while driving
+- Drivers may NOT watch, record, or broadcast video while driving
+- Wireless devices only allowed in hands-free or voice-to-text mode
+- Emergency exception: wireless device may be used to report emergency
+- Signal at least 100 feet (approximately 4 seconds) before turning
+- Do not signal a turn beyond an intersection until IN the intersection
+- Passing: pass on the left. When passing is complete, return to right lane when you can see BOTH headlights of passed vehicle in rearview mirror
+- Passing on right is permitted only when: driver ahead is turning LEFT, open highway marked for 2+ same-direction lanes, business/residential district with 2+ same-direction lanes
+- You must NEVER pass on the right by driving off the paved portion of the roadway
+- Do NOT pass: at double solid lines, approaching curve or hill crest, within 100 feet of street crossing, within 100 feet of railroad crossing, within 100 feet of bridge/tunnel/underpass
+- Roundabout: always yield to pedestrians and bicyclists, enter RIGHT of central island, yield to vehicles already inside, designed for 15-20 mph, yield to large vehicles entering at same time
+- When tailgated: gradually slow down to give more cushion, move to another lane when safe
+- Parking on downhill with curb: turn wheels TOWARD curb, set parking brake
+- Parking on uphill with curb: turn wheels LEFT (away from curb), let car roll back until wheel rests against curb
+- If no curb on hill: turn wheels RIGHT (toward shoulder/away from road center)
+- Prohibited parking: on sidewalk, in front of driveway, within intersection, on crosswalk or within 20 feet of crosswalk, on freeway (except emergency), within 15 feet of fire hydrant, within 50 feet of railroad crossing, on bridge or in tunnel
+
+SECTION 3 - ROADWAY AND VEHICLE KNOWLEDGE:
+- GREEN signal: go if clear, check left and right for cross traffic, yield to vehicles already in intersection
+- YELLOW signal: caution, prepare to stop if not yet in intersection; if in intersection continue through
+- RED signal: complete stop before intersection, stop line or crosswalk; right turn permitted after full stop where not prohibited
+- Flashing RED: same as stop sign - full stop, then proceed with caution
+- Flashing YELLOW: slow down and proceed with caution
+- Red Arrow: may NOT turn in direction of arrow, wait for green signal
+- Yellow Arrow: light changing to red, must stop if not in intersection
+- Flashing Yellow Arrow: slow down, turn with caution, yield to oncoming vehicles and pedestrians
+- Green Arrow: may proceed in direction of arrow if in proper lane
+- Inoperative signal: treat as 4-way stop; driver on LEFT yields to driver on RIGHT
+- T-intersection: driver on the street that ends must yield to cross street
+- Speed limits when NOT posted: 15 mph at school crosswalk, 25 mph in business/residential district, 55 mph on open highways/city freeways, 65 mph on designated open highways, 75 mph on rural freeways
+- School zones: 15 mph maximum from first sign to past school crossing
+- Work zones: fines DOUBLE for speed violations
+- HOV lanes: cannot drive with fewer than 2 persons (including driver) during posted times Monday-Friday; motorcycle and buses allowed
+- Stop at railroad crossing at least 15 FEET from nearest track when: flashing red lights, lowered barricade, ringing bells, flagger warning
+- Do NOT drive around or under a lowered railroad crossing barricade
+- School bus: must stop REGARDLESS of direction. Only exception: divided roadway (physical barrier, not just striping) when traveling in opposite direction
+- Pentagon (5-sided) sign = school crossing sign
+- Circle sign = railroad warning sign
+- Octagon = stop sign
+- Triangle = yield sign
+- Pennant shape = no passing zone
+- Diamond (yellow) = warning/hazard ahead
+- Double solid yellow lines: NO passing in either direction; may cross only to turn left
+- Broken yellow lines: passing on left permitted when clear
+- Solid yellow beside broken yellow: only side with broken may pass
+- Broken white lines: separates same-direction traffic, may cross with caution (signal first)
+- Solid white lines: prevent lane changes near intersections, marks right edge of road
+- Double solid white line: crossing prohibited
+- Orange construction signs: work zone, must obey
+- White painted curb = stop only to pick up/drop off passengers
+- Yellow painted curb = stop to load/unload, stay with car
+- Red painted curb = no stopping, standing, or parking
+- Right turn from the right-most lane; approach close to right curb
+- Left turn on two-way road: stay just right of center line, turn just left of center
+- Two-way left turn lane: bordered by two yellow lines, inner broken, outer solid. Only for left turns, not thru traffic or passing
+- U-turns: permitted when safe, does not interfere with traffic, not prohibited by signs
+- Right turn on red: must first come to COMPLETE STOP before crosswalk
+
+SECTION 4 - SHARING THE ROAD:
+- Bicyclists have same rights and responsibilities as drivers
+- Minimum safe distance passing a bicyclist: 3 FEET
+- Do NOT honk horn at bicyclists when passing
+- At night, dim headlights when near bicyclists
+- Bicyclists can move left to turn, avoid hazards, pass, or if lane too narrow
+- Motorcycles: allowed full width of lane, never crowd into same lane
+- Lane filtering (motorcycle passing stopped vehicles): only when street has 2+ same-direction lanes, posted speed limit does not exceed 45 mph, motorcycle does NOT travel faster than 15 mph
+- Trucks: do NOT cut in front (takes twice as long to stop), watch for No-Zone blind spots, follow at safe distance, careful of wide right turns
+- Slow-moving vehicles display orange triangle, travel max 25 mph; do not become impatient
+
+SECTION 5 - ACTIVELY AVOIDING CRASHES:
+- Average driver perception time: 0.75 seconds
+- Average driver reaction time: 0.75 seconds (from perception to braking)
+- Braking distance affected by: speed, perception time, reaction time, pavement condition, tire condition, vehicle weight, brake condition
+- On wet roads: reduce speed appropriately
+- On snow/ice: reduce speed appropriately
+- Bad weather: DOUBLE the following distance and reduce speed
+
+SECTION 6/7 - EMERGENCIES & LAW ENFORCEMENT:
+- Emergency vehicles: yield right-of-way, move to RIGHT and stop until passed
+- Must maintain at least 500 feet behind fire department vehicle responding to emergency
+- Must maintain at least 300 feet behind police vehicle responding to emergency
+- Do not drive into or park within the block where emergency vehicle has stopped
+- Move Over Law (ARS 28-775): move over one lane for ANY vehicle with flashing lights on shoulder; if not safe, slow down and use caution. Applies to all freeways and multiple-lane highways
+- Funeral procession: yield to vehicles with funeral escort vehicle flashing red or blue light
+- Red light running causing crash with life-threatening injuries: up to $500 fine, 3-month suspension
+- Red light running causing death: up to $1,000 fine, 6-month suspension
+- Running a red light: must attend Traffic Survival School upon conviction
+- If vehicle must stop on freeway: pull to RIGHT shoulder as far as possible, set parking brake, shift to park, turn on emergency flashers
+
+LICENSE INFORMATION:
+- Instruction permit age: at least 15 years 6 months (graduated/motorcycle), at least 18 for operator permit
+- Graduated license (Class G): issued to 16 to under 18 year olds
+- First 6 months of graduated license: no driving between MIDNIGHT and 5:00 AM (unless parent in front seat or going to school activity, employment, religious activity, or family emergency)
+- First 6 months of graduated license: no more than ONE passenger under 18 (unless siblings or parent in front seat)
+- Must hold instruction permit for at least 6 months before graduated license
+- Must complete 30 hours supervised driving (10 hours at night) OR 20 hours (6 at night) with Traffic Survival/Defensive Driving course
+- Motorcycle permit: prohibited from carrying passengers, cannot use freeways/interstates between sunset and sunrise
+- Motorcycle permit valid: 7 months, can be renewed ONLY ONCE within 24-month period
+- Class A CDL: combinations with GCWR of 26,001+ lbs where towed vehicle exceeds 10,000 lbs GVWR
+- Class B CDL: single vehicle GVWR 26,001+ lbs or towing vehicle not exceeding 10,000 lbs GVWR
+- Class C CDL: designed for 16+ passengers including driver, or transports hazardous materials requiring placards
+- You must notify MVD within 10 DAYS of name or address change
+- If you remain in Arizona for 7 months or more in a calendar year, you are considered a resident
+- Must apply for title within 15 DAYS of vehicle purchase
+- Travel ID (REAL ID): costs $25, valid 8 years in most cases, required for federal facilities and boarding commercial aircraft
+- Travel ID requires: one primary document (passport, birth certificate, permanent resident card, etc.) plus Social Security Number plus two proofs of residency
+- ID card: available to all ages for $12; FREE for persons 65+ or receiving SSI disability
+- Cannot possess BOTH an ID card and driver license at the same time
+- Replacement driver license: $12; must visit MVD office if license more than 12 years old
+- Traffic violation penalties (under 18 with graduated license): 1st - attend Traffic Survival School; 2nd - 3-month suspension; 3rd - 6-month suspension
+- Voter registration: must be 18+, US citizen, AZ resident, no felony conviction (unless rights restored), not adjudicated incompetent; must register 29 days before election
+- Medical Condition Indicator: must have statement signed by licensed physician or registered nurse practitioner
+- Vehicle insurance minimum: $25,000 bodily injury per person, $50,000 for 2+ persons, $15,000 property damage
+- Must notify MVD within 10 days of address change or may be cited by law enforcement
+- National Driver Register: nationwide system; outstanding actions in another state will prevent AZ license issuance
+- Military personnel: not considered AZ residents if qualify under Soldiers and Sailors Relief Act; can work in AZ up to 90 days post-discharge with valid out-of-state license
+- Selective Service: male US citizens must register within 30 days of 18th birthday; AZ law requires consent to registration when applying for driver license if under 26
+`;
+
+// ─────────── STATE ───────────
+let selectedTopic = 'all';
+let selectedMode = 'multiple';
+let selectedCount = 10;
+let currentQ = 0;
+let correct = 0;
+let questions = [];
+let answered = false;
+let sessionActive = false;
+
+// ─────────── TOPIC / MODE BUTTON SETUP ───────────
+document.querySelectorAll('#topicGrid .topic-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#topicGrid .topic-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTopic = btn.dataset.topic;
+  });
+});
+
+document.querySelectorAll('#modeRow .mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#modeRow .mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedMode = btn.dataset.mode;
+  });
+});
+
+document.querySelectorAll('#countRow .mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#countRow .mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedCount = parseInt(btn.dataset.count);
+  });
+});
+
+// ─────────── TOPIC DESCRIPTIONS ───────────
+const topicDescriptions = {
+  all: 'all sections of the Arizona Driver License Manual',
+  signs: 'traffic signs, signal lights, pavement markings, and road signs (Section 3)',
+  rules: 'rules of the road, right-of-way, intersections, turning, passing, and speed limits',
+  safety: 'safe driving practices, defensive driving, following distance, distractions, and lane positioning (Section 2)',
+  license: 'driver license classes, instruction permits, graduated license, fees, ID cards, and requirements',
+  emergency: 'handling emergencies, emergency vehicles, Move Over law, and law enforcement (Sections 6-7)',
+  sharing: 'sharing the road with bicyclists, motorcycles, trucks, and slow-moving vehicles (Section 4)',
+  parking: 'parking rules, freeway driving, HOV lanes, roundabouts, and prohibited parking (Sections 2-3)'
+};
+
+// ─────────── START SESSION ───────────
+async function startSession() {
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'block';
+  document.getElementById('scoreStrip').style.display = 'block';
+
+  questions = [];
+  currentQ = 0;
+  correct = 0;
+  sessionActive = true;
+
+  updateScore();
+  await fetchNextQuestion();
+}
+
+// ─────────── FETCH QUESTION FROM CLAUDE API ───────────
+async function fetchNextQuestion() {
+  answered = false;
+  const qNum = currentQ + 1;
+  const total = selectedCount;
+
+  // Update progress
+  document.getElementById('progressFill').style.width = `${((currentQ) / total) * 100}%`;
+
+  // Show loading
+  const area = document.getElementById('questionArea');
+  area.innerHTML = `
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-text">Generating question ${qNum} of ${total}…</div>
+      <div class="loading-sub">Drawing from the Arizona Driver License Manual</div>
+    </div>`;
+
+  const modeForQ = selectedMode === 'mixed'
+    ? (Math.random() < 0.7 ? 'multiple' : 'truefalse')
+    : selectedMode;
+
+  const topicDesc = topicDescriptions[selectedTopic];
+
+  const systemPrompt = `You are a strict quiz generator for the Arizona Driver License Manual. You ONLY generate questions based on the exact content provided to you - never invent facts, never use knowledge outside the provided manual text. Every answer and explanation must be directly traceable to the manual content.
+
+Respond ONLY with a valid JSON object, no markdown fences, no extra text.`;
+
+  const userPrompt = `Generate ONE ${modeForQ === 'truefalse' ? 'true/false' : 'multiple choice'} quiz question about: ${topicDesc}.
+
+MANUAL CONTENT TO USE:
+${MANUAL_CONTENT}
+
+Previously asked questions (do NOT repeat these topics closely):
+${questions.map((q,i) => `Q${i+1}: ${q.question}`).join('\n') || 'None yet'}
+
+Requirements:
+- The question MUST be based ONLY on facts explicitly stated in the manual content above
+- For multiple choice: provide exactly 4 options (A, B, C, D)
+- For true/false: provide exactly 2 options: "True" and "False"
+- Make it realistic, like an actual DMV written test question
+- Vary difficulty: some easy, some tricky
+- Include a SHORT explanation (1-2 sentences) citing the specific rule from the manual
+
+Return ONLY this JSON structure:
+{
+  "question": "The question text here?",
+  "type": "${modeForQ}",
+  "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
+  "correctIndex": 0,
+  "difficulty": "easy" or "medium" or "hard",
+  "topic": "brief topic label",
+  "explanation": "Brief explanation citing the manual rule."
+}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const data = await response.json();
+    const raw = data.content.map(b => b.text || '').join('');
+
+    // Strip any markdown fences just in case
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const qData = JSON.parse(cleaned);
+
+    questions.push(qData);
+    renderQuestion(qData);
+
+  } catch (err) {
+    area.innerHTML = `
+      <div class="error-card">
+        ⚠️ Could not generate question. Check your internet connection and try again.<br>
+        <small style="opacity:0.7;margin-top:6px;display:block">${err.message}</small>
+      </div>
+      <button class="next-btn" onclick="fetchNextQuestion()">RETRY →</button>`;
+  }
+}
+
+// ─────────── RENDER QUESTION ───────────
+function renderQuestion(q) {
+  const qNum = currentQ + 1;
+  const total = selectedCount;
+  const area = document.getElementById('questionArea');
+
+  let optionsHTML = '';
+
+  if (q.type === 'truefalse') {
+    optionsHTML = `<div class="tf-row">
+      ${q.options.map((opt, i) => `
+        <button class="tf-btn" onclick="selectAnswer(${i})" data-idx="${i}">${opt.toUpperCase()}</button>
+      `).join('')}
+    </div>`;
+  } else {
+    const letters = ['A','B','C','D'];
+    optionsHTML = `<div class="options-list">
+      ${q.options.map((opt, i) => `
+        <button class="option-btn" onclick="selectAnswer(${i})" data-idx="${i}">
+          <span class="option-letter">${letters[i]}</span>
+          ${opt}
+        </button>
+      `).join('')}
+    </div>`;
+  }
+
+  area.innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-tag">${q.topic || 'AZ Manual'}</span>
+        <span class="q-num">Q${qNum} / ${total}</span>
+        <span class="q-diff ${q.difficulty}">${q.difficulty || ''}</span>
+      </div>
+      <div class="question-text">${q.question}</div>
+      ${optionsHTML}
+      <div id="explanation" style="display:none" class="explanation"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" style="display:none" onclick="nextQuestion()">
+      ${qNum < total ? 'NEXT QUESTION →' : 'SEE RESULTS →'}
+    </button>`;
+}
+
+// ─────────── SELECT ANSWER ───────────
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[currentQ];
+  const isCorrect = idx === q.correctIndex;
+
+  if (isCorrect) correct++;
+  updateScore();
+
+  // Style buttons
+  const btns = document.querySelectorAll('.option-btn, .tf-btn');
+  btns.forEach(btn => {
+    btn.disabled = true;
+    const i = parseInt(btn.dataset.idx);
+    if (i === q.correctIndex) btn.classList.add('correct');
+    else if (i === idx && !isCorrect) btn.classList.add('wrong');
+  });
+
+  // Show explanation
+  const expDiv = document.getElementById('explanation');
+  expDiv.innerHTML = `<strong>${isCorrect ? '✓ Correct!' : '✗ Incorrect.'}</strong> ${q.explanation}`;
+  expDiv.style.display = 'block';
+
+  // Show next button
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+// ─────────── NEXT QUESTION ───────────
+async function nextQuestion() {
+  currentQ++;
+  if (currentQ >= selectedCount) {
+    showResults();
+  } else {
+    await fetchNextQuestion();
+  }
+}
+
+// ─────────── UPDATE SCORE ───────────
+function updateScore() {
+  document.getElementById('scoreDisplay').textContent = `${correct}/${Math.min(currentQ + (answered ? 1 : 0), selectedCount)}`;
+}
+
+// ─────────── SHOW RESULTS ───────────
+function showResults() {
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'block';
+  document.getElementById('progressFill').style.width = '100%';
+
+  const total = selectedCount;
+  const pct = Math.round((correct / total) * 100);
+  const passed = pct >= 80;
+  const grade = pct >= 90 ? 'EXCELLENT' : pct >= 80 ? 'PASSED' : pct >= 60 ? 'KEEP STUDYING' : 'NEEDS WORK';
+  const gradeClass = pct >= 90 ? 'pass' : pct >= 80 ? 'good' : 'fail';
+
+  document.getElementById('resultsCard').innerHTML = `
+    <div class="results-title ${gradeClass}">${grade}</div>
+    <div class="results-score">${pct}%</div>
+    <div class="results-sub">${correct} correct out of ${total} questions · ${passed ? 'Arizona DMV passing score is 80%' : 'You need 80% to pass the real test'}</div>
+
+    <div class="results-stats">
+      <div class="stat-box">
+        <div class="stat-val">${correct}</div>
+        <div class="stat-key">Correct</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${total - correct}</div>
+        <div class="stat-key">Missed</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${pct}%</div>
+        <div class="stat-key">Score</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;color:var(--muted);font-size:13px;line-height:1.6">
+      ${pct >= 80
+        ? '🎉 Great job! You have a solid understanding of Arizona driving laws. Keep reviewing to ace the real test!'
+        : '📖 Review the sections where you missed questions. Focus on speed limits, traffic signs, and right-of-way rules — these are heavily tested.'}
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="restart-btn" onclick="retrySession()">TRY AGAIN</button>
+      <button class="restart-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent)" onclick="goHome()">CHANGE TOPIC</button>
+    </div>`;
+}
+
+function retrySession() {
+  document.getElementById('resultsScreen').style.display = 'none';
+  questions = [];
+  currentQ = 0;
+  correct = 0;
+  updateScore();
+  document.getElementById('quizScreen').style.display = 'block';
+  fetchNextQuestion();
+}
+
+function goHome() {
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('setupScreen').style.display = 'block';
+  document.getElementById('scoreStrip').style.display = 'none';
+  questions = [];
+  currentQ = 0;
+  correct = 0;
+}
+</script>
+</body>
+</html>
